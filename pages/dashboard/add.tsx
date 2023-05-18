@@ -1,6 +1,76 @@
-import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/router";
+import axios from "axios";
+import { TypeOf, number, object, string } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-const add = () => {
+const createUserSchema = object({
+  brand: string().nonempty({
+    message: "Brand is required",
+  }),
+  model: string().nonempty({
+    message: "Model is required",
+  }),
+  transmission: string().nonempty({
+    message: "Transmission is required",
+  }),
+  exterior_color: string().nonempty({
+    message: "Exterior Color is required",
+  }),
+  interior_color: string().nonempty({
+    message: "Interior Color is required",
+  }),
+  condition: string().nonempty({
+    message: "Condition is required",
+  }),
+  price: string().nonempty({ message: "Price is required" }),
+  year: string().nonempty({ message: "Year is required" }),
+  description: string()
+    .nonempty({
+      message: "Description is required",
+    })
+    .min(60, "Description should be at least 60 characters long"),
+  location: string().nonempty({
+    message: "Location is required",
+  }),
+  gas: string().nonempty({
+    message: "Gas is required",
+  }),
+  thumbnail: string().nonempty({
+    message: "Thumbnail is required",
+  }),
+  images: string()
+    .nonempty({
+      message: "Images is required",
+    })
+    .transform((value) => value.split(",")),
+});
+
+type CreateUserInput = TypeOf<typeof createUserSchema>;
+
+function add() {
+  const router = useRouter();
+  const [registerError, setRegisterError] = useState(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateUserInput>({
+    resolver: zodResolver(createUserSchema),
+  });
+  async function onSubmit(values: CreateUserInput) {
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/products`,
+        values
+      );
+      router.push("/dashboard/");
+    } catch (e: any) {
+      setRegisterError(e.message);
+    }
+  }
+
   return (
     <>
       <header className="bg-white shadow">
@@ -12,13 +82,14 @@ const add = () => {
       </header>
       <main>
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <form>
+          <p className="text-red-500">{registerError}</p>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-12">
               <div className="border-b border-gray-900/10 pb-12">
                 <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                   <div className="sm:col-span-2">
                     <label
-                      htmlFor="first-name"
+                      htmlFor="brand"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
                       Brand name
@@ -26,17 +97,19 @@ const add = () => {
                     <div className="mt-2">
                       <input
                         type="text"
-                        name="first-name"
-                        id="first-name"
-                        autoComplete="given-name"
+                        id="brand"
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        {...register("brand")}
                       />
+                      <small className="text-red-700">
+                        {errors.brand?.message as string}
+                      </small>
                     </div>
                   </div>
 
                   <div className="sm:col-span-2">
                     <label
-                      htmlFor="last-name"
+                      htmlFor="model"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
                       Model name
@@ -44,31 +117,35 @@ const add = () => {
                     <div className="mt-2">
                       <input
                         type="text"
-                        name="last-name"
                         id="last-name"
-                        autoComplete="family-name"
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        {...register("model")}
                       />
+                      <small className="text-red-700">
+                        {errors.model?.message as string}
+                      </small>
                     </div>
                   </div>
                   <div className="sm:col-span-2">
                     <label
-                      htmlFor="country"
+                      htmlFor="transmission"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
                       Transmission
                     </label>
                     <div className="mt-2">
                       <select
-                        id="country"
-                        name="country"
-                        autoComplete="country-name"
+                        id="transmission"
+                        {...register("transmission")}
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       >
                         <option>Select</option>
-                        <option>Automatic</option>
-                        <option>Manual</option>
+                        <option value="Automatic">Automatic</option>
+                        <option value="Manual">Manual</option>
                       </select>
+                      <small className="text-red-700">
+                        {errors.transmission?.message as string}
+                      </small>
                     </div>
                   </div>
 
@@ -82,11 +159,14 @@ const add = () => {
                     <div className="mt-2">
                       <textarea
                         id="description"
-                        name="description"
+                        {...register("description")}
                         rows={3}
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                         defaultValue={""}
                       />
+                      <small className="text-red-700">
+                        {errors.description?.message as string}
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -104,11 +184,13 @@ const add = () => {
                     <div className="mt-2">
                       <input
                         type="text"
-                        name="condition"
+                        {...register("condition")}
                         id="condition"
-                        autoComplete=""
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
+                      <small className="text-red-700">
+                        {errors.condition?.message as string}
+                      </small>
                     </div>
                   </div>
 
@@ -121,12 +203,18 @@ const add = () => {
                     </label>
                     <div className="mt-2">
                       <input
-                        type="text"
-                        name="exterior"
+                        type="color"
+                        {...register("exterior_color")}
+                        onChange={(event) => {
+                          register("exterior_color");
+                          console.log(event.target.value);
+                        }}
                         id="exterior"
-                        autoComplete="address-level1"
-                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className=" w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset"
                       />
+                      <small className="text-red-700">
+                        {errors.exterior_color?.message as string}
+                      </small>
                     </div>
                   </div>
 
@@ -139,47 +227,39 @@ const add = () => {
                     </label>
                     <div className="mt-2">
                       <input
-                        type="text"
-                        name="interior"
+                        type="color"
+                        {...register("interior_color")}
+                        onChange={(event) => {
+                          register("interior_color");
+                          console.log(event.target.value);
+                        }}
                         id="interior"
-                        autoComplete="postal-code"
-                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className=" w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset"
                       />
+                      <small className="text-red-700">
+                        {errors.interior_color?.message as string}
+                      </small>
                     </div>
                   </div>
 
                   <div className="col-span-full">
                     <label
-                      htmlFor="cover-photo"
+                      htmlFor="thumbnail"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
-                      Car Thumbnail
+                      Car Thumbnail Link
                     </label>
-                    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                      <div className="text-center">
-                        <PhotoIcon
-                          className="mx-auto h-12 w-12 text-gray-300"
-                          aria-hidden="true"
-                        />
-                        <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                          <label
-                            htmlFor="thumbnail"
-                            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                          >
-                            <span>Upload a file</span>
-                            <input
-                              id="thumbnail"
-                              name="thumbnail"
-                              type="file"
-                              className="sr-only"
-                            />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <p className="text-xs leading-5 text-gray-600">
-                          PNG, JPG, GIF up to 10MB
-                        </p>
-                      </div>
+                    <div className="mt-2">
+                      <textarea
+                        id="thumbnail"
+                        {...register("thumbnail")}
+                        rows={3}
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        defaultValue={""}
+                      />
+                      <small className="text-red-700">
+                        {errors.thumbnail?.message as string}
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -197,14 +277,35 @@ const add = () => {
                     <div className="mt-2">
                       <input
                         type="number"
-                        name="price"
+                        {...register("price")}
                         id="price"
-                        autoComplete=""
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
+                      <small className="text-red-700">
+                        {errors.price?.message as string}
+                      </small>
                     </div>
                   </div>
 
+                  <div className="sm:col-span-2 ">
+                    <label
+                      htmlFor="year"
+                      className="block text-sm font-medium leading-6 text-gray-900"
+                    >
+                      Year
+                    </label>
+                    <div className="mt-2">
+                      <input
+                        type="number"
+                        {...register("year")}
+                        id="year"
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      />
+                      <small className="text-red-700">
+                        {errors.year?.message as string}
+                      </small>
+                    </div>
+                  </div>
                   <div className="sm:col-span-2">
                     <label
                       htmlFor="location"
@@ -215,11 +316,14 @@ const add = () => {
                     <div className="mt-2">
                       <input
                         type="text"
-                        name="location"
+                        {...register("location")}
                         id="location"
                         autoComplete="address-level1"
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       />
+                      <small className="text-red-700">
+                        {errors.location?.message as string}
+                      </small>
                     </div>
                   </div>
 
@@ -233,50 +337,41 @@ const add = () => {
                     <div className="mt-2">
                       <select
                         id="gas"
-                        name="gas"
-                        autoComplete=""
+                        {...register("gas")}
                         className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       >
                         <option>Select</option>
-                        <option>Petrol</option>
-                        <option>Electric</option>
+                        <option value="Petrol">Petrol</option>
+                        <option value="Electric">Electric</option>
                       </select>
+                      <small className="text-red-700">
+                        {errors.gas?.message as string}
+                      </small>
                     </div>
                   </div>
 
                   <div className="col-span-full">
                     <label
-                      htmlFor="cover-photo"
+                      htmlFor="images"
                       className="block text-sm font-medium leading-6 text-gray-900"
                     >
-                      Car Images
+                      Car Images Links
                     </label>
-                    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                      <div className="text-center">
-                        <PhotoIcon
-                          className="mx-auto h-12 w-12 text-gray-300"
-                          aria-hidden="true"
-                        />
-                        <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                          <label
-                            htmlFor="file-upload"
-                            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                          >
-                            <span>Upload a file</span>
-                            <input
-                              id="file-upload"
-                              name="file-upload"
-                              type="file"
-                              className="sr-only"
-                            />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <p className="text-xs leading-5 text-gray-600">
-                          PNG, JPG, GIF up to 10MB
-                        </p>
-                      </div>
+                    <div className="mt-2">
+                      <textarea
+                        id="images"
+                        {...register("images")}
+                        rows={3}
+                        className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        defaultValue={""}
+                      />
+                      <small className="text-red-700">
+                        {errors.images?.message as string}
+                      </small>
                     </div>
+                    <p className="mt-3 text-sm leading-6 text-gray-600">
+                      Paste Links of the image with coma seprating them
+                    </p>
                   </div>
                 </div>
               </div>
@@ -301,6 +396,6 @@ const add = () => {
       </main>
     </>
   );
-};
+}
 
 export default add;

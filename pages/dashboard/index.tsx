@@ -1,4 +1,25 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
+
 const home = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = () => {
+    axios
+      .get(`${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/products`)
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+  console.log(data);
+
   return (
     <>
       <header className="bg-white shadow">
@@ -56,7 +77,7 @@ const home = () => {
                       href="#"
                       className="inline-block rounded bg-green-600 px-4 py-2 text-xs font-medium text-white "
                     >
-                      View
+                      Edit
                     </a>
                   </td>
                   <td className="whitespace-nowrap px-4 py-2">

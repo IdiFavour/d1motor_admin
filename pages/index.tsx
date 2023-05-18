@@ -1,10 +1,43 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { TypeOf, object, string } from "zod";
 
-const inter = Inter({ subsets: ['latin'] })
+const createSessionSchema = object({
+  email: string().nonempty({
+    message: "Email is required",
+  }),
+  password: string().nonempty({
+    message: "Password is required",
+  }),
+});
+
+type CreateSessionInput = TypeOf<typeof createSessionSchema>;
 
 export default function Home() {
+  const router = useRouter();
+  const [loginError, setLoginError] = useState(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateSessionInput>({
+    resolver: zodResolver(createSessionSchema),
+  });
+  async function onSubmit(values: CreateSessionInput) {
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/sessions`,
+        values
+      );
+      router.push("/dashboard/");
+    } catch (e: any) {
+      setLoginError(e.message);
+    }
+  }
   return (
     <>
       <section className="bg-white">
@@ -26,10 +59,13 @@ export default function Home() {
                 Welcome to D1 Motor
               </h1>
 
-              <form action="#" className="mt-8 grid grid-cols-6 gap-6">
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="mt-8 grid grid-cols-6 gap-6"
+              >
                 <div className="col-span-6">
                   <label
-                    htmlFor="Email"
+                    htmlFor="email"
                     className="block text-sm font-medium text-gray-700"
                   >
                     Email
@@ -37,10 +73,13 @@ export default function Home() {
 
                   <input
                     type="email"
-                    id="Email"
-                    name="email"
+                    id="email"
                     className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
+                    {...register("email")}
                   />
+                  <small className="text-red-700">
+                    {errors.email?.message as string}
+                  </small>
                 </div>
 
                 <div className="col-span-6 ">
@@ -54,17 +93,21 @@ export default function Home() {
                   <input
                     type="password"
                     id="Password"
-                    name="password"
                     className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm text-gray-700 shadow-sm"
+                    {...register("password")}
                   />
+                  <small className="text-red-700">
+                    {errors.password?.message as string}
+                  </small>
                 </div>
 
                 <div className="col-span-6 sm:flex sm:items-center sm:gap-4">
-                  <Link href={"/dashboard/"}>
-                    <button className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500">
-                      Login
-                    </button>
-                  </Link>
+                  <button
+                    type="submit"
+                    className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500"
+                  >
+                    Login
+                  </button>
                 </div>
               </form>
             </div>
