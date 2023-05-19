@@ -1,8 +1,10 @@
 import axios from "axios";
+import Link from "next/link";
+import router from "next/router";
 import { useEffect, useState } from "react";
 
 const home = () => {
-  const [data, setData] = useState([]);
+  const [data, setData]: any = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -18,7 +20,6 @@ const home = () => {
         console.error("Error:", error);
       });
   };
-  console.log(data);
 
   return (
     <>
@@ -51,44 +52,41 @@ const home = () => {
               </thead>
 
               <tbody className="divide-y divide-gray-200">
-                <tr>
-                  <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-                    John Doe
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                    24/05/1995
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                    Web Developer
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                    $120,000
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-2">
-                    <a
-                      href="#"
-                      className="inline-block rounded bg-blue-600 px-4 py-2 text-xs font-medium text-white "
-                    >
-                      View
-                    </a>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-2">
-                    <a
-                      href="#"
-                      className="inline-block rounded bg-green-600 px-4 py-2 text-xs font-medium text-white "
-                    >
-                      Edit
-                    </a>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-2">
-                    <a
-                      href="#"
-                      className="inline-block rounded bg-red-600 px-4 py-2 text-xs font-medium text-white"
-                    >
-                      Delete
-                    </a>
-                  </td>
-                </tr>
+                {data.map((item: any, index: any) => (
+                  <tr key={index}>
+                    <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+                      {item.brand}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                      {item.model}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                      {item.location}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                      {parseInt(item.price).toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "AED",
+                      })}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2">
+                      <Link
+                        href={`/dashboard/item/${item.productId}`}
+                        className="inline-block rounded bg-blue-600 px-4 py-2 text-xs font-medium text-white "
+                      >
+                        View
+                      </Link>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2">
+                      <a
+                        href="#"
+                        className="inline-block rounded bg-green-600 px-4 py-2 text-xs font-medium text-white "
+                      >
+                        Edit
+                      </a>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
